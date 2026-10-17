@@ -212,11 +212,10 @@
   }
   function ringkasSpp(ym) {
     let lunas = 0, lunasN = 0, belum = 0, wajib = 0;
-    const tar = R.tarif(ym);
     R.siswaTerdaftar().forEach((s) => {
       const l = R.lunas(s.id, ym);
       if (l) { lunas += +l.nominal || 0; lunasN++; wajib++; }
-      else if (R.ditagih(s, ym)) { belum += tar; wajib++; }
+      else if (R.ditagih(s, ym)) { belum += R.tarifSiswa(s.id, ym); wajib++; }
     });
     return { lunas, lunasN, belum, wajib };
   }
@@ -614,8 +613,10 @@
               <dl class="kv mt-12"><dt>Terakhir hadir</dt><dd>${esc(U.tgl((D().lastHadir || {})[s.id]))}</dd></dl></div>
             <div class="card card-pad"><h4 class="mb-12">${icon('receipt')} SPP ${U.bln(ym)}</h4>
               ${sppBulan ? `<div class="note-box ok">${icon('circle-check')}<span>Lunas ${esc(U.tgl(sppBulan.tglBayar))} · ${U.rp(sppBulan.nominal)}</span></div>`
-                : R.ditagih(s, ym) ? `<div class="note-box bad">${icon('circle-alert')}<span><b>Belum bayar</b> · ${U.rp(R.tarif(ym))}${tg.belum.length > 1 ? '<br>Tunggakan: ' + esc(U.daftarBulan(tg.belum)) : ''}</span></div>` : '<p class="small muted">Tidak ada tagihan bulan ini.</p>'}
-              <button class="btn btn-accent btn-block mt-12" data-bayar>${icon('wallet')} Tandai Lunas & Buat Kuitansi</button></div>
+                : R.ditagih(s, ym) ? `<div class="note-box bad">${icon('circle-alert')}<span><b>Belum bayar</b> · ${U.rp(R.tarifSiswa(s.id, ym))}${tg.belum.length > 1 ? '<br>Tunggakan: ' + esc(U.daftarBulan(tg.belum)) : ''}</span></div>` : '<p class="small muted">Tidak ada tagihan bulan ini.</p>'}
+              <button class="btn btn-accent btn-block mt-12" data-bayar>${icon('wallet')} Tandai Lunas & Buat Kuitansi</button>
+              ${(() => { const k = R.khususPada(s.id, U.ymNow()); const nanti = (R.idx().tk[s.id] || []).filter((x) => x.berlakuMulai > U.ymNow()).sort((a, b) => a.berlakuMulai.localeCompare(b.berlakuMulai))[0];
+                return `<div class="tk-info mt-12">${icon('tag', 'ic-sm')}<span>${k ? `Tarif khusus <b>${esc(A.labelTarifKhusus(k))}</b>/bln${k.keterangan ? ' · ' + esc(k.keterangan) : ''}` : `Tarif umum <b>${U.rp(R.tarif(U.ymNow()))}</b>/bln`}${nanti ? `<br><span class="muted">Mulai ${esc(U.bulan(nanti.berlakuMulai))}: ${esc(A.labelTarifKhusus(nanti))}</span>` : ''}</span><button class="btn btn-ghost btn-sm" data-tk>${icon('pencil', 'ic-sm')} Atur</button></div>`; })()}</div>
             <div class="card card-pad"><h4 class="mb-12">${icon('award')} Piagam</h4>${piagam.length ? piagam.map((x) => `<div class="row-gap mb-12"><span class="icon-dot sm ok">${icon('circle-check')}</span><div style="flex:1"><b class="small">${x.jenis === 'ahe' ? 'Piagam Baca (Ahe)' : 'Piagam Ala · ' + esc(x.kelompok)}</b><div class="tiny muted">${esc(x.nomor)} · ${esc(U.tgl(x.tglLulus))}</div></div><a class="btn btn-ghost btn-icon btn-sm" href="#/piagam/hasil/${x.jenis}/${x.id}" title="Lihat & unduh">${icon('download')}</a></div>`).join('') : '<p class="small muted">Belum ada piagam.</p>'}
               ${ps.some((x) => R.siap(x).length) ? `<a class="btn btn-soft btn-block" href="#/piagam">${icon('award')} Buat piagam</a>` : ''}</div>
           </div></div>`;
@@ -671,6 +672,7 @@
       $$('[data-tab]').forEach((b) => b.onclick = () => { ui.tab = b.dataset.tab; A.render(); });
       $$('[data-edit]').forEach((b) => b.onclick = () => A.formSiswa(s));
       $$('[data-bayar]').forEach((b) => b.onclick = () => A.bayarSiswa(s));
+      const tkb = $('[data-tk]'); if (tkb) tkb.onclick = () => A.formTarifKhusus([s.id]);
       $$('[data-a]').forEach((b) => b.onclick = async () => {
         const k = b.dataset.a;
         if (k === 'naik') Aksi.naik([s.id]);

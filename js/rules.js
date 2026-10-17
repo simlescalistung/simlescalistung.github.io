@@ -16,12 +16,13 @@
   R.invalidate = () => { ver++; idx = null; };
   R.idx = () => {
     if (idx) return idx;
-    const i = { siswa: {}, prog: {}, progSiswa: {}, guru: {}, spp: {}, kw: {}, libur: D.libur || [], piagamSiswa: {} };
+    const i = { siswa: {}, prog: {}, progSiswa: {}, guru: {}, spp: {}, kw: {}, libur: D.libur || [], piagamSiswa: {}, tk: {} };
     (D.siswa || []).forEach((s) => { i.siswa[s.id] = s; });
     (D.program || []).forEach((p) => { i.prog[p.id] = p; (i.progSiswa[p.siswaId] = i.progSiswa[p.siswaId] || []).push(p); });
     (D.guru || []).forEach((g) => { i.guru[g.id] = g; });
     (D.spp || []).forEach((x) => { i.spp[x.siswaId + '_' + x.bulan] = x; });
     (D.kuitansi || []).forEach((k) => { i.kw[k.id] = k; });
+    (D.tarifKhusus || []).forEach((k) => { (i.tk[k.siswaId] = i.tk[k.siswaId] || []).push(k); });
     const pg = D.piagam || { ahe: [], ala: [] };
     (pg.ahe || []).forEach((r) => { if (r.siswaId) (i.piagamSiswa[r.siswaId] = i.piagamSiswa[r.siswaId] || []).push(Object.assign({ jenis: 'ahe' }, r)); });
     (pg.ala || []).forEach((r) => { if (r.siswaId) (i.piagamSiswa[r.siswaId] = i.piagamSiswa[r.siswaId] || []).push(Object.assign({ jenis: 'ala' }, r)); });
@@ -50,11 +51,14 @@
 
   // ---------------- SPP ----------------
   R.tarif = (ym) => { let p = null; (D.tarif || []).forEach((t) => { if (t.berlakuMulai <= ym && (!p || t.berlakuMulai > p.berlakuMulai)) p = t; }); return p ? (+p.nominal || 0) : 0; };
+  // Tarif khusus per siswa: catatan terakhir yang berlaku pada bulan ym ('umum' = kembali ke tarif umum)
+  R.khususPada = (sid, ym) => { let p = null; (R.idx().tk[sid] || []).forEach((k) => { if (k.berlakuMulai <= ym && (!p || k.berlakuMulai > p.berlakuMulai)) p = k; }); return p && p.nominal !== 'umum' && p.nominal !== '' ? p : null; };
+  R.tarifSiswa = (sid, ym) => { const k = R.khususPada(sid, ym); return k ? (+k.nominal || 0) : R.tarif(ym); };
   R.ditagih = (s, ym) => {
     if (!s || s.statusDaftar !== 'diterima') return false;
     const set = R.set();
     if (set.spp_mulai_bulan && ym < set.spp_mulai_bulan) return false;
-    if (R.tarif(ym) <= 0) return false;
+    if (R.tarifSiswa(s.id, ym) <= 0) return false;
     return R.programs(s.id).some((p) => {
       const mulai = (p.tglMulai || String(s.createdAt || '').slice(0, 10)).slice(0, 7);
       if (mulai && mulai > ym) return false;
@@ -69,7 +73,7 @@
     const belum = [];
     for (let i = 0; i < 12; i++) { const ym = U.addMonths(m0, -i); if (R.ditagih(s, ym) && !R.lunas(s.id, ym)) belum.push(ym); }
     belum.sort();
-    return { belum, dua: belum.includes(m0) && belum.includes(U.addMonths(m0, -1)), total: belum.reduce((t, b) => t + R.tarif(b), 0) };
+    return { belum, dua: belum.includes(m0) && belum.includes(U.addMonths(m0, -1)), total: belum.reduce((t, b) => t + R.tarifSiswa(s.id, b), 0) };
   };
 
   // ---------------- Absen ----------------

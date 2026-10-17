@@ -452,7 +452,7 @@
       const persen = rk.wajib ? Math.round(rk.lunasN / rk.wajib * 1000) / 10 : 0;
       view.innerHTML = `<div class="page-head"><div><h1>SPP & Kuitansi</h1><p>Tandai pembayaran, terbitkan kuitansi resmi, dan pantau tunggakan.</p></div>
         <div class="actions"><div class="row-gap" style="gap:4px"><a class="btn btn-light btn-icon btn-sm" href="#/spp/${U.addMonths(ym, -1)}" aria-label="Bulan sebelumnya">${icon('chevron-left')}</a>${U.tombolPeriode('s-per', ym, ym)}<a class="btn btn-light btn-icon btn-sm" href="#/spp/${U.addMonths(ym, 1)}" aria-label="Bulan berikutnya">${icon('chevron-right')}</a></div>
-          <button class="btn btn-light btn-sm" id="s-tarif">${icon('settings')} Atur Tarif</button><button class="btn btn-light btn-sm" data-ex="xlsx" style="color:#15803D">${icon('file-spreadsheet')} Excel</button><button class="btn btn-light btn-sm" data-ex="pdf" style="color:var(--bad-700)">${icon('file-text')} PDF</button></div></div>
+          <button class="btn btn-light btn-sm" id="s-tarif">${icon('settings')} Atur Tarif</button><button class="btn btn-light btn-sm" id="s-khusus">${icon('tag')} Tarif Khusus${A.jumlahKhusus() ? ` <span class="n-pill">${A.jumlahKhusus()}</span>` : ''}</button><button class="btn btn-light btn-sm" data-ex="xlsx" style="color:#15803D">${icon('file-spreadsheet')} Excel</button><button class="btn btn-light btn-sm" data-ex="pdf" style="color:var(--bad-700)">${icon('file-text')} PDF</button></div></div>
         ${kartuDraf()}
         ${tarif ? '' : `<div class="note-box warn mb-16">${icon('triangle-alert')}<span><b>Tarif SPP untuk ${U.bulan(ym)} belum diatur.</b> Tagihan dan peringatan tunggakan baru dihitung setelah tarif ditetapkan. <a href="#" id="s-tarif2" style="font-weight:700">Atur tarif sekarang</a></span></div>`}
         <div class="stats four mb-16"><div class="card stat"><div class="top"><span class="lbl">Tarif aktif</span><span class="icon-dot sm">${icon('wallet')}</span></div><div class="val sm">${U.rp(tarif)}<span class="small muted">/bln</span></div><div class="sub">Jatuh tempo tgl ${+d.settings.spp_jatuh_tempo || 10}</div></div>
@@ -466,7 +466,7 @@
         <div class="card">${rows.length ? `<div class="tbl-wrap"><table class="tbl tbl-cards"><thead><tr><th class="w-check">${A.cek('data-all', ui.sel.size && halRows.filter((r) => !r.l).every((r) => ui.sel.has(r.s.id)))}</th><th>Siswa</th><th>Program</th><th>Status</th><th>Tunggakan</th><th class="t-right">Aksi</th></tr></thead><tbody>
           ${halRows.map(({ s, p, l, tg }) => { const kw = l && R.idx().kw[l.kuitansiId]; return `<tr class="${ui.sel.has(s.id) ? 'sel' : ''} ${dua.has(s.id) && !l ? 'row-bad' : ''}">
             <td class="w-check">${l ? '' : A.cek(`data-sel="${s.id}"`, ui.sel.has(s.id))}</td>
-            <td class="t-main"><div class="person">${U.avatar(s.nama, s.id)}<div><a class="t-name" href="#/siswa/${s.id}">${esc(s.nama)}</a> ${s.panggilan ? `<span class="small muted">(${esc(s.panggilan)})</span>` : ''}<div class="t-sub">${esc(s.kode)}${s.ortu ? ' · Ortu: ' + esc(s.ortu) : ''}</div></div></div></td>
+            <td class="t-main"><div class="person">${U.avatar(s.nama, s.id)}<div><a class="t-name" href="#/siswa/${s.id}">${esc(s.nama)}</a> ${s.panggilan ? `<span class="small muted">(${esc(s.panggilan)})</span>` : ''}<div class="t-sub">${esc(s.kode)}${s.ortu ? ' · Ortu: ' + esc(s.ortu) : ''}${R.khususPada(s.id, ym) ? ` <span class="chip chip-sm chip-tk" title="Tarif SPP khusus${R.khususPada(s.id, ym).keterangan ? ': ' + esc(R.khususPada(s.id, ym).keterangan) : ''}">${icon('tag', 'ic-sm')} ${esc(A.labelTarifKhusus(R.khususPada(s.id, ym)))}</span>` : ''}</div></div></div></td>
             <td data-l="Program">${A.chipProg(p, true)}</td>
             <td data-l="Status">${l ? `<span class="chip chip-ok">${icon('check')} Lunas</span><div class="t-sub nowrap">${esc(U.tgl(l.tglBayar))}${kw ? ' · <span class="num">' + esc(kw.nomor || 'menunggu…') + '</span>' : ''}</div>` : `<span class="chip chip-bad">${icon('circle-alert')} Belum bayar</span>`}</td>
             <td data-l="Tunggakan">${tg.belum.length ? `<span class="chip ${tg.dua ? 'chip-bad' : 'chip-warn'}">${tg.belum.length} bln: ${esc(tg.belum.map(U.bln).join(', '))}</span>` : '<span class="chip">Lancar</span>'}</td>
@@ -482,7 +482,7 @@
       $('#s-st').onchange = (e) => { ui.st = e.target.value; ul(); };
       $('#s-tg').onclick = () => { ui.tunggak = !ui.tunggak; ul(); };
       $('#s-per').onclick = () => pilihPeriodeSpp(ym, ym);
-      pasangDraf(); $('#s-tarif').onclick = aturTarif; const t2 = $('#s-tarif2'); if (t2) t2.onclick = (e) => { e.preventDefault(); aturTarif(); };
+      pasangDraf(); $('#s-tarif').onclick = aturTarif; $('#s-khusus').onclick = () => A.kelolaTarifKhusus(); const t2 = $('#s-tarif2'); if (t2) t2.onclick = (e) => { e.preventDefault(); aturTarif(); };
       $$('[data-sel]').forEach((c) => c.onchange = () => { c.checked ? ui.sel.add(c.dataset.sel) : ui.sel.delete(c.dataset.sel); ul(); });
       const all = $('[data-all]'); if (all) all.onchange = () => { halRows.filter((r) => !r.l).forEach((r) => all.checked ? ui.sel.add(r.s.id) : ui.sel.delete(r.s.id)); ul(); };
       const ps = $('#s-pilih-semua'); if (ps) ps.onclick = () => { rows.filter((r) => !r.l).forEach((r) => ui.sel.add(r.s.id)); ul(); };
@@ -518,7 +518,7 @@
       const sel = bulan.map((b) => { const l = R.lunas(s.id, b); return { b, l, tagih: !l && R.ditagih(s, b) && b <= kini }; });
       const dibayar = sel.filter((x) => x.l).reduce((t, x) => t + (+x.l.nominal || 0), 0);
       const belumB = sel.filter((x) => x.tagih);
-      return { s, p: R.prog(s.id), sel, dibayar, belumB, belum: belumB.reduce((t, x) => t + R.tarif(x.b), 0), nLunas: sel.filter((x) => x.l).length };
+      return { s, p: R.prog(s.id), sel, dibayar, belumB, belum: belumB.reduce((t, x) => t + R.tarifSiswa(s.id, x.b), 0), nLunas: sel.filter((x) => x.l).length };
     }).filter((x) => x.nLunas || x.belumB.length);
     const q = ui.q.toLowerCase();
     const rows = semua.filter((x) => (!ui.prog || (x.p && x.p.program === ui.prog)) && (!ui.st || (ui.st === 'lunas' ? !x.belumB.length : x.belumB.length)) && (!q || [x.s.nama, x.s.panggilan, x.s.kode, x.s.ortu].join(' ').toLowerCase().includes(q)))
@@ -562,7 +562,7 @@
   }
   // Catat pembayaran: optimistis + satu kuitansi per siswa
   function catatBayar(s, bulan, o) {
-    const items = bulan.filter((b) => !R.lunas(s.id, b)).map((b) => ({ bulan: b, nominal: R.tarif(b) }));
+    const items = bulan.filter((b) => !R.lunas(s.id, b)).map((b) => ({ bulan: b, nominal: R.tarifSiswa(s.id, b) }));
     if (!items.length) return null;
     const kw = { id: U.uid(), token: U.token(), nomor: '', siswaId: s.id, bulan: items.map((i) => i.bulan).sort().join(','), total: String(items.reduce((a, i) => a + i.nominal, 0)), tglBayar: o.tglBayar, metode: o.metode, penerima: D().settings.kuitansi_penerima || 'Admin', createdAt: U.nowIso() };
     A.mut((d) => {
@@ -590,11 +590,11 @@
     const tg = R.tunggakan(s);
     const now = U.ymNow();
     const opsi = new Set(tg.belum);
-    for (let i = -2; i <= 2; i++) { const b = U.addMonths(now, i); if (R.ditagih(s, b) || (i >= 0 && R.tarif(b) > 0)) opsi.add(b); }
+    for (let i = -2; i <= 2; i++) { const b = U.addMonths(now, i); if (R.ditagih(s, b) || (i >= 0 && R.tarifSiswa(s.id, b) > 0)) opsi.add(b); }
     const awal = df ? String(df.bulan).split(',').filter(Boolean) : Array.isArray(ymAwal) ? ymAwal : ymAwal ? [ymAwal] : null;
     if (awal) awal.forEach((b) => opsi.add(b));
-    const list = Array.from(opsi).filter((b) => R.tarif(b) > 0).sort();
-    if (!list.length) { U.toast('Tarif SPP belum diatur', 'warn'); return A.S.role === 'admin' ? aturTarif() : null; }
+    const list = Array.from(opsi).filter((b) => R.tarifSiswa(s.id, b) > 0).sort();
+    if (!list.length) { if (R.khususPada(s.id, now)) return U.toast(s.nama + ' bebas SPP (tarif khusus Rp0)', 'info'); U.toast('Tarif SPP belum diatur', 'warn'); return A.S.role === 'admin' ? aturTarif() : null; }
     const pilihAwal = new Set(awal || (tg.belum.length ? tg.belum : [now]));
     // bulan yang sudah ada di draf lain yang masih menunggu
     const diDraf = {};
@@ -603,10 +603,11 @@
       title: (draf ? 'Catat Pembayaran (Draf) — ' : setujui ? 'Setujui Draf — ' : 'Bayar SPP — ') + s.nama, icon: 'receipt',
       sub: esc(s.kode) + (R.prog(s.id) ? ' · ' + esc(R.LABEL[R.prog(s.id).program]) + ' Level ' + esc(R.prog(s.id).level) : ''),
       body: `${draf ? `<div class="note-box mb-12">${icon('info')}<span>Pembayaran dicatat sebagai <b>draf</b>. Status lunas & kuitansi baru terbit setelah <b>disetujui admin utama</b>.</span></div>` : ''}
+        ${R.khususPada(s.id, now) ? `<div class="note-box mb-12 tk-note">${icon('tag')}<span>Siswa ini memakai <b>tarif khusus ${esc(A.labelTarifKhusus(R.khususPada(s.id, now)))}</b>/bulan${R.khususPada(s.id, now).keterangan ? ' (' + esc(R.khususPada(s.id, now).keterangan) + ')' : ''}.</span></div>` : ''}
         ${setujui ? `<div class="note-box mb-12">${icon('user-check')}<span>Dicatat oleh <b>${esc(df.namaPembuat || '-')}</b> · ${esc(U.tgl(String(df.createdAt).slice(0, 10)))}${df.catatan ? '<br>Catatan: ' + esc(df.catatan) : ''}</span></div>` : ''}
         <div class="tiny strong muted mb-12" style="letter-spacing:.06em">PILIH BULAN YANG DIBAYAR</div><div class="stack-sm" id="by-list">${list.map((b) => { const l = R.lunas(s.id, b); const tunggak = tg.belum.includes(b); const dd = draf && diDraf[b]; return `<label class="card card-pad row-gap" style="padding:12px 14px;cursor:${l || dd ? 'default' : 'pointer'};${tunggak ? 'background:#FFF6F6;border-color:#FBD5D5' : ''}">
           <span class="check"><input type="checkbox" value="${b}" ${l ? 'disabled checked' : dd ? 'disabled' : pilihAwal.has(b) ? 'checked' : ''}><span class="box">${icon('check')}</span></span>
-          <div style="flex:1"><b>${U.bulan(b)}</b><div class="tiny ${l ? '' : tunggak ? '' : 'muted'}" style="${tunggak && !l ? 'color:var(--bad-700);font-weight:700' : ''}">${l ? 'Sudah lunas ' + esc(U.tgl(l.tglBayar)) : dd ? 'Sudah ada di draf, menunggu admin' : tunggak ? 'TUNGGAKAN' : b > now ? 'Bayar di muka' : b === now ? 'Bulan berjalan' : ''}</div></div><b class="num">${U.rp(R.tarif(b))}</b></label>`; }).join('')}</div>
+          <div style="flex:1"><b>${U.bulan(b)}</b><div class="tiny ${l ? '' : tunggak ? '' : 'muted'}" style="${tunggak && !l ? 'color:var(--bad-700);font-weight:700' : ''}">${l ? 'Sudah lunas ' + esc(U.tgl(l.tglBayar)) : dd ? 'Sudah ada di draf, menunggu admin' : tunggak ? 'TUNGGAKAN' : b > now ? 'Bayar di muka' : b === now ? 'Bulan berjalan' : ''}</div></div><b class="num">${U.rp(R.tarifSiswa(s.id, b))}</b></label>`; }).join('')}</div>
         <div class="card soft card-pad mt-16 row-gap"><div style="flex:1"><div class="small muted">Total pembayaran</div><div class="tiny muted" id="by-n"></div></div><div style="font-family:var(--f-head);font-weight:900;font-size:26px;color:var(--p-700)" id="by-total" class="num"></div></div>
         <div class="grid-2 mt-16"><div class="field"><label>Metode</label><select class="input" id="by-metode">${['Tunai', 'Transfer Bank', 'QRIS / E-wallet'].map((x) => `<option ${df && df.metode === x ? 'selected' : ''}>${x}</option>`).join('')}</select></div><div class="field"><label>Tanggal bayar</label><input class="input" type="date" id="by-tgl" value="${esc(df && df.tglBayar ? df.tglBayar : U.today())}" max="${U.today()}"></div></div>
         ${draf ? `<div class="field mt-16"><label for="by-cat">Catatan untuk admin (opsional)</label><input class="input" id="by-cat" maxlength="300" placeholder="Contoh: dibayar oleh ibunya, uang pas"></div>`
@@ -615,7 +616,7 @@
     });
     const hitung = () => {
       const p = m.$$('#by-list input:checked:not(:disabled)').map((i) => i.value);
-      m.$('#by-total').textContent = U.rp(p.reduce((a, b) => a + R.tarif(b), 0));
+      m.$('#by-total').textContent = U.rp(p.reduce((a, b) => a + R.tarifSiswa(s.id, b), 0));
       m.$('#by-n').textContent = p.length + ' bulan dipilih';
       m.$('[data-ok]').disabled = !p.length;
     };
@@ -625,7 +626,7 @@
       const p = m.$$('#by-list input:checked:not(:disabled)').map((i) => i.value);
       const metode = m.$('#by-metode').value, tglBayar = m.$('#by-tgl').value || U.today();
       if (draf) {
-        const rec = { id: U.uid(), siswaId: s.id, bulan: p.join(','), total: String(p.reduce((a, b) => a + R.tarif(b), 0)), metode, tglBayar, catatan: m.$('#by-cat').value.trim(), status: 'menunggu', dibuatOleh: A.S.user.id, namaPembuat: A.S.user.nama, createdAt: U.nowIso(), diprosesAt: '', kuitansiId: '' };
+        const rec = { id: U.uid(), siswaId: s.id, bulan: p.join(','), total: String(p.reduce((a, b) => a + R.tarifSiswa(s.id, b), 0)), metode, tglBayar, catatan: m.$('#by-cat').value.trim(), status: 'menunggu', dibuatOleh: A.S.user.id, namaPembuat: A.S.user.nama, createdAt: U.nowIso(), diprosesAt: '', kuitansiId: '' };
         A.mut((d) => { d.drafSpp = (d.drafSpp || []).concat([rec]); });
         A.kirim({ op: 'drafBayar', draf: Object.assign({}, rec, { bulan: p }), _label: 'Draf pembayaran' });
         m.close(); U.toast('Draf pembayaran ' + s.nama + ' dikirim ke admin (' + p.length + ' bulan)');
@@ -722,9 +723,10 @@
       body: `<p class="small muted mb-12">Tarif berlaku mulai bulan tertentu. Mengubah tarif tidak mengubah tagihan bulan sebelumnya.</p>
         <div class="grid-2"><div class="field"><label>Berlaku mulai</label><input class="input" type="month" id="tf-b" value="${U.ymNow()}"></div><div class="field"><label>Nominal (Rp)</label><input class="input" id="tf-n" inputmode="numeric" placeholder="150000" value="${tarif[0] ? tarif[0].nominal : ''}"></div></div>
         <div class="divider"></div><h4 class="mb-12">Riwayat tarif</h4>${tarif.length ? `<div class="stack-sm">${tarif.map((t) => `<div class="row-gap card soft card-pad" style="padding:10px 14px"><b style="flex:1">${U.bulan(t.berlakuMulai)}</b><span class="num strong">${U.rp(t.nominal)}</span><button class="btn btn-danger-ghost btn-icon btn-xs" data-h="${t.berlakuMulai}" title="Hapus">${icon('trash-2')}</button></div>`).join('')}</div>` : '<p class="small muted">Belum ada tarif.</p>'}`,
-      foot: `<button class="btn btn-light" data-n>Tutup</button><button class="btn btn-primary" data-ok>${icon('save')} Simpan tarif</button>`
+      foot: `<button class="btn btn-ghost mr-auto" data-khusus>${icon('tag')} Tarif khusus siswa${A.jumlahKhusus() ? ' (' + A.jumlahKhusus() + ')' : ''}</button><button class="btn btn-light" data-n>Tutup</button><button class="btn btn-primary" data-ok>${icon('save')} Simpan tarif</button>`
     });
     m.$('[data-n]').onclick = () => m.close();
+    m.$('[data-khusus]').onclick = () => { m.close(); setTimeout(A.kelolaTarifKhusus, 160); };
     m.$$('[data-h]').forEach((b) => b.onclick = () => { const bm = b.dataset.h; A.mut((d) => { d.tarif = d.tarif.filter((t) => t.berlakuMulai !== bm); }); A.kirim({ op: 'setTarif', berlakuMulai: bm, nominal: 0, hapus: true, _label: 'Hapus tarif' }); m.close(); aturTarif(); });
     m.$('[data-ok]').onclick = () => {
       const b = m.$('#tf-b').value, n = Math.round(+String(m.$('#tf-n').value).replace(/\D/g, ''));
@@ -734,10 +736,127 @@
       U.toast('Tarif ' + U.rp(n) + ' berlaku mulai ' + U.bulan(b)); m.close();
     };
   }
+  // ======================================================================
+  // TARIF SPP KHUSUS PER SISWA (admin utama)
+  // ======================================================================
+  A.labelTarifKhusus = (k) => !k ? '-' : k.nominal === 'umum' ? 'Tarif umum' : +k.nominal === 0 ? 'Gratis (Rp0)' : U.rp(k.nominal);
+  const KET_KHUSUS = ['Anak guru', 'Saudara kandung', 'Beasiswa', 'Keringanan', 'Yatim'];
+  function daftarKhusus() {
+    const now = U.ymNow(), tk = R.idx().tk;
+    return Object.keys(tk).map((sid) => {
+      const list = tk[sid].slice().sort((a, b) => a.berlakuMulai.localeCompare(b.berlakuMulai));
+      const kini = R.khususPada(sid, now);
+      const nanti = list.filter((k) => k.berlakuMulai > now);
+      return { s: R.idx().siswa[sid], list, kini, nanti };
+    }).filter((x) => x.s && (x.kini || x.nanti.length)).sort((a, b) => a.s.nama.localeCompare(b.s.nama));
+  }
+  A.jumlahKhusus = () => daftarKhusus().length;
+  A.kelolaTarifKhusus = function kelolaTarifKhusus() {
+    const dk = daftarKhusus();
+    const umum = R.tarif(U.ymNow());
+    const m = U.modal({
+      title: 'Tarif SPP Khusus', icon: 'tag', size: 'wide',
+      sub: 'Harga SPP berbeda untuk siswa tertentu',
+      body: `<div class="note-box mb-16">${icon('info')}<span>Tarif umum saat ini <b>${U.rp(umum)}</b>/bulan. Tarif khusus menggantikan tarif umum <b>hanya untuk siswa yang dipilih</b>, mulai bulan tertentu (misalnya anak guru, saudara kandung, beasiswa). Isi <b>Rp0</b> untuk gratis. Bulan yang sudah lunas tidak berubah.</span></div>
+        ${dk.length ? `<div class="tk-list">${dk.map((x) => { const k = x.kini, n = x.nanti[0]; return `<div class="tk-row">${U.avatar(x.s.nama, x.s.id)}<div class="tk-main"><b>${esc(x.s.nama)}</b>
+            <div class="tiny muted">${k ? `<span class="chip chip-sm chip-tk">${esc(A.labelTarifKhusus(k))}${+k.nominal > 0 ? '/bln' : ''}</span> sejak ${esc(U.bulan(k.berlakuMulai))}${k.keterangan ? ' · ' + esc(k.keterangan) : ''}` : 'Masih tarif umum'}${n ? `<br>Mulai ${esc(U.bulan(n.berlakuMulai))}: <b>${esc(A.labelTarifKhusus(n))}</b>${n.keterangan && n.nominal !== 'umum' ? ' · ' + esc(n.keterangan) : ''}` : ''}</div></div>
+            <div class="tk-act"><button class="btn btn-light btn-sm" data-ubah="${x.s.id}">${icon('pencil', 'ic-sm')} Ubah</button>${k ? `<button class="btn btn-ghost btn-sm" data-akhiri="${x.s.id}">${icon('rotate-ccw', 'ic-sm')} Kembalikan ke umum</button>` : ''}</div></div>`; }).join('')}</div>`
+          : A.kosong('tag', 'Belum ada tarif khusus', 'Semua siswa memakai tarif umum.')}`,
+      foot: `<button class="btn btn-light" data-n>Tutup</button><button class="btn btn-primary" data-tambah>${icon('plus')} Tambah tarif khusus</button>`
+    });
+    m.$('[data-n]').onclick = () => m.close();
+    m.$('[data-tambah]').onclick = () => { m.close(); A.formTarifKhusus([], { kembali: true }); };
+    m.$$('[data-ubah]').forEach((b) => b.onclick = () => { m.close(); A.formTarifKhusus([b.dataset.ubah], { kembali: true }); });
+    m.$$('[data-akhiri]').forEach((b) => b.onclick = () => { m.close(); akhiriKhusus(b.dataset.akhiri, true); });
+  };
+  function simpanKhusus(items, hapus, label) {
+    A.mut((d) => {
+      d.tarifKhusus = (d.tarifKhusus || []).filter((k) => !(hapus || []).includes(k.id) && !items.some((i) => i.id === k.id)).concat(items);
+    });
+    A.kirim({ op: 'tarifKhusus', items: items.map((i) => ({ siswaId: i.siswaId, berlakuMulai: i.berlakuMulai, nominal: i.nominal, keterangan: i.keterangan })), hapus: hapus || [], _label: label || 'Tarif SPP khusus' });
+  }
+  async function akhiriKhusus(sid, kembali) {
+    const s = R.idx().siswa[sid]; if (!s) return;
+    const m = U.modal({
+      title: 'Kembalikan ke tarif umum', icon: 'rotate-ccw', sub: esc(s.nama),
+      body: `<p class="small mb-12">Mulai bulan yang dipilih, ${esc(s.nama)} kembali membayar <b>tarif umum</b>. Tagihan bulan sebelumnya tetap memakai tarif khusus.</p>
+        <div class="field"><label for="tk-akhir">Mulai bulan</label><input class="input" type="month" id="tk-akhir" value="${U.ymNow()}"></div>`,
+      foot: `<button class="btn btn-light" data-n>Batal</button><button class="btn btn-primary" data-ok>${icon('save')} Simpan</button>`,
+      onClose: () => { if (kembali && !m._ok) setTimeout(A.kelolaTarifKhusus, 160); }
+    });
+    m.$('[data-n]').onclick = () => m.close();
+    m.$('[data-ok]').onclick = () => {
+      const bm = m.$('#tk-akhir').value;
+      if (!/^\d{4}-\d{2}$/.test(bm)) return U.toast('Pilih bulan', 'warn');
+      // catatan yang dijadwalkan sesudah bulan itu ikut dibatalkan
+      const hapus = (R.idx().tk[sid] || []).filter((k) => k.berlakuMulai > bm).map((k) => k.id);
+      simpanKhusus([{ id: sid + '_' + bm, siswaId: sid, berlakuMulai: bm, nominal: 'umum', keterangan: '', updatedAt: U.nowIso() }], hapus, 'Tarif umum ' + s.nama);
+      U.toast(s.nama + ' kembali ke tarif umum mulai ' + U.bulan(bm));
+      m._ok = true; m.close(); if (kembali) setTimeout(A.kelolaTarifKhusus, 160); else A.render();
+    };
+  }
+  A.formTarifKhusus = function formTarifKhusus(pilih, opsi) {
+    opsi = opsi || {};
+    const sel = new Set(pilih || []);
+    const satu = sel.size === 1 ? R.idx().siswa[Array.from(sel)[0]] : null;
+    const kini = satu ? R.khususPada(satu.id, U.ymNow()) : null;
+    const riwayat = satu ? (R.idx().tk[satu.id] || []).slice().sort((a, b) => b.berlakuMulai.localeCompare(a.berlakuMulai)) : [];
+    const kandidat = R.siswaTerdaftar().filter((s) => { const st = R.status(s.id); return st === 'aktif' || st === 'rehat' || sel.has(s.id); }).sort((a, b) => a.nama.localeCompare(b.nama));
+    const ui = { q: '' };
+    const m = U.modal({
+      title: satu ? 'Tarif khusus — ' + satu.nama : 'Tambah tarif SPP khusus', icon: 'tag', size: 'wide',
+      body: `${satu ? '' : `<div class="field"><label>Pilih siswa <span class="muted small" id="tk-n"></span></label>
+          <div class="input-icon mb-8">${icon('search')}<input class="input" id="tk-q" placeholder="Cari nama siswa…" autocomplete="off"></div>
+          <div class="tk-pick" id="tk-pick"></div></div>`}
+        <div class="grid-2 ${satu ? '' : 'mt-16'}"><div class="field"><label for="tk-nom">Tarif per bulan (Rp)</label><input class="input" id="tk-nom" inputmode="numeric" placeholder="Contoh: 100000" value="${kini ? esc(kini.nominal) : ''}">
+            <div class="row-gap mt-8" style="gap:6px"><button class="btn btn-light btn-sm" data-cepat="0">Gratis (Rp0)</button>${[0.5, 0.75].map((f) => R.tarif(U.ymNow()) ? `<button class="btn btn-light btn-sm" data-cepat="${Math.round(R.tarif(U.ymNow()) * f)}">${f === 0.5 ? 'Diskon 50%' : 'Diskon 25%'}</button>` : '').join('')}</div></div>
+          <div class="field"><label for="tk-mulai">Berlaku mulai</label><input class="input" type="month" id="tk-mulai" value="${U.ymNow()}"><p class="help">Berlaku terus sampai diubah atau dikembalikan ke tarif umum.</p></div></div>
+        <div class="field mt-16"><label for="tk-ket">Keterangan (opsional)</label><input class="input" id="tk-ket" maxlength="100" placeholder="Contoh: Anak guru" value="${kini ? esc(kini.keterangan || '') : ''}">
+          <div class="row-gap mt-8" style="gap:6px">${KET_KHUSUS.map((k) => `<button class="btn btn-ghost btn-sm" data-ket="${esc(k)}">${esc(k)}</button>`).join('')}</div></div>
+        <div class="note-box mt-16">${icon('info')}<span>Tarif umum saat ini ${U.rp(R.tarif(U.ymNow()))}/bulan. Bulan yang <b>sudah lunas tidak berubah</b>. Tarif <b>Rp0</b> berarti siswa tidak ditagih SPP.</span></div>
+        ${riwayat.length ? `<div class="divider"></div><h4 class="mb-12">Riwayat tarif khusus</h4><div class="stack-sm">${riwayat.map((k) => `<div class="row-gap card soft card-pad" style="padding:10px 14px"><b style="flex:1">${esc(U.bulan(k.berlakuMulai))}</b><span class="num strong">${esc(A.labelTarifKhusus(k))}</span><span class="small muted" style="min-width:90px">${esc(k.keterangan || '')}</span><button class="btn btn-ghost btn-icon btn-sm" data-hps="${esc(k.id)}" title="Hapus catatan ini" aria-label="Hapus">${icon('trash-2')}</button></div>`).join('')}</div>` : ''}`,
+      foot: `<button class="btn btn-light" data-n>Batal</button><button class="btn btn-primary" data-ok>${icon('save')} Simpan tarif khusus</button>`,
+      onClose: () => { if (opsi.kembali && !m._ok) setTimeout(A.kelolaTarifKhusus, 160); }
+    });
+    const gambar = () => {
+      const el = m.$('#tk-pick'); if (!el) return;
+      const q = ui.q.trim().toLowerCase();
+      const rows = kandidat.filter((s) => !q || (s.nama + ' ' + (s.panggilan || '') + ' ' + (s.kode || '')).toLowerCase().includes(q));
+      el.innerHTML = rows.length ? rows.slice(0, 200).map((s) => { const k = R.khususPada(s.id, U.ymNow()); const p = R.prog(s.id);
+        return `<label class="tk-opt ${sel.has(s.id) ? 'on' : ''}"><span class="check"><input type="checkbox" value="${s.id}" ${sel.has(s.id) ? 'checked' : ''}><span class="box">${icon('check')}</span></span>
+          <span class="tk-nm"><b>${esc(s.nama)}</b><span class="tiny muted">${p ? esc(R.SINGKAT[p.program]) + ' · Lv ' + esc(p.level) : ''}${k ? ' · khusus ' + esc(A.labelTarifKhusus(k)) : ''}</span></span></label>`; }).join('')
+        : `<p class="small muted" style="padding:10px">Siswa tidak ditemukan.</p>`;
+      m.$('#tk-n').textContent = sel.size ? `(${sel.size} dipilih)` : '';
+    };
+    gambar();
+    const qi = m.$('#tk-q'); if (qi) qi.oninput = () => { ui.q = qi.value; gambar(); };
+    const pk = m.$('#tk-pick'); if (pk) pk.onchange = (e) => { if (e.target.type === 'checkbox') { e.target.checked ? sel.add(e.target.value) : sel.delete(e.target.value); gambar(); } };
+    m.$$('[data-cepat]').forEach((b) => b.onclick = () => { m.$('#tk-nom').value = b.dataset.cepat; });
+    m.$$('[data-ket]').forEach((b) => b.onclick = () => { m.$('#tk-ket').value = b.dataset.ket; });
+    m.$$('[data-hps]').forEach((b) => b.onclick = async () => {
+      const ok = await U.confirm({ title: 'Hapus catatan tarif?', text: 'Catatan tarif khusus ini dihapus seperti tidak pernah dibuat. Gunakan bila salah input.', ok: 'Hapus', batal: 'Batal', danger: true });
+      if (!ok) return;
+      simpanKhusus([], [b.dataset.hps], 'Hapus tarif khusus'); m._ok = true; m.close(); setTimeout(() => A.formTarifKhusus(pilih, opsi), 160);
+    });
+    m.$('[data-n]').onclick = () => m.close();
+    m.$('[data-ok]').onclick = () => {
+      const raw = String(m.$('#tk-nom').value).replace(/\D/g, '');
+      const bm = m.$('#tk-mulai').value, ket = m.$('#tk-ket').value.trim();
+      if (!sel.size) return U.toast('Pilih minimal satu siswa', 'warn');
+      if (raw === '') return U.toast('Isi tarif per bulan (isi 0 untuk gratis)', 'warn');
+      if (!/^\d{4}-\d{2}$/.test(bm)) return U.toast('Pilih bulan berlaku', 'warn');
+      const n = Math.round(+raw);
+      const items = Array.from(sel).map((sid) => ({ id: sid + '_' + bm, siswaId: sid, berlakuMulai: bm, nominal: String(n), keterangan: ket, updatedAt: U.nowIso() }));
+      simpanKhusus(items, [], 'Tarif SPP khusus');
+      U.toast(`Tarif khusus ${n ? U.rp(n) : 'Gratis'} untuk ${items.length === 1 ? R.idx().siswa[items[0].siswaId].nama : items.length + ' siswa'} mulai ${U.bulan(bm)}`);
+      m._ok = true; m.close();
+      if (opsi.kembali) setTimeout(A.kelolaTarifKhusus, 160); else A.render();
+    };
+  };
   async function eksporSpp(ym, fmt) {
     const rows = R.siswaTerdaftar().filter((s) => R.lunas(s.id, ym) || R.ditagih(s, ym)).sort((a, b) => a.nama.localeCompare(b.nama));
     const rk = A.ringkasSpp(ym);
-    const body = rows.map((s, i) => { const l = R.lunas(s.id, ym); const p = R.prog(s.id) || {}; const kw = l && R.idx().kw[l.kuitansiId]; return [i + 1, s.nama, s.kode, p.program === 'ala' ? 'Ala' : p.program === 'ahe' ? 'Ahe' : '-', p.level || '-', l ? 'Lunas' : 'Belum', l ? U.tgl(l.tglBayar) : '-', kw ? kw.nomor : '-', l ? +l.nominal : R.tarif(ym)]; });
+    const body = rows.map((s, i) => { const l = R.lunas(s.id, ym); const p = R.prog(s.id) || {}; const kw = l && R.idx().kw[l.kuitansiId]; return [i + 1, s.nama, s.kode, p.program === 'ala' ? 'Ala' : p.program === 'ahe' ? 'Ahe' : '-', p.level || '-', l ? 'Lunas' : 'Belum', l ? U.tgl(l.tglBayar) : '-', kw ? kw.nomor : '-', l ? +l.nominal : R.tarifSiswa(s.id, ym)]; });
     body.push(['', 'TOTAL LUNAS: ' + U.rp(rk.lunas) + ' · BELUM: ' + U.rp(rk.belum), '', '', '', rk.lunasN + '/' + rk.wajib, '', '', '']);
     const lembar = [{ nama: U.bulan(ym), judul: 'Rekap SPP — ' + U.bulan(ym), head: ['No', 'Nama Siswa', 'Kode', 'Program', 'Lv', 'Status', 'Tgl Bayar', 'No. Kuitansi', 'Nominal'], body }];
     try { if (fmt === 'xlsx') await A.unduhExcel(lembar, 'Rekap-SPP_' + ym); else await A.unduhPdf(lembar, 'Rekap-SPP_' + ym); } catch (e) { U.toast(e.message, 'bad'); }

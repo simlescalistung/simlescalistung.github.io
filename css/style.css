@@ -990,3 +990,28 @@ body.public .ann { margin-top: 28px; }
 .pr-chip input:focus-visible + span { outline: 2px solid var(--p); outline-offset: 2px; }
 .qr-mini { width: 120px; height: 120px; flex: none; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; display: grid; place-items: center; }
 .qr-mini img { width: 100%; height: 100%; image-rendering: pixelated; }
+
+/* ---------- v1.7: Tarif SPP khusus ---------- */
+.chip-tk { background: var(--sun-50); color: #7A4B00; border: 1px solid #F5D58A; gap: 4px; }
+.chip-tk .ic-sm { width: 12px; height: 12px; }
+.n-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 800; margin-left: 4px; }
+.mr-auto { margin-right: auto; }
+.tk-list { display: flex; flex-direction: column; gap: 8px; }
+.tk-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 14px; background: var(--surface); }
+.tk-main { flex: 1; min-width: 0; }
+.tk-main .tiny { margin-top: 3px; line-height: 1.6; }
+.tk-act { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.tk-pick { max-height: 260px; overflow-y: auto; border: 1px solid var(--line-2); border-radius: 12px; padding: 4px; background: var(--surface); }
+.tk-opt { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+.tk-opt:hover { background: var(--p-50); }
+.tk-opt.on { background: var(--p-50); }
+.tk-nm { display: flex; flex-direction: column; min-width: 0; }
+.tk-nm b { font-size: 14px; }
+.tk-info { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--sun-50); color: #6B4400; font-size: 13px; line-height: 1.5; }
+.tk-info > span { flex: 1; min-width: 0; }
+.tk-info .btn { flex: none; }
+@media (max-width: 640px) {
+  .tk-row { flex-wrap: wrap; }
+  .tk-act { width: 100%; justify-content: flex-start; }
+  .modal-foot .btn.mr-auto { flex-basis: 100%; margin-right: 0; }
+}
