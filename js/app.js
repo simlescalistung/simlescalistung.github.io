@@ -175,7 +175,7 @@
     opsi = opsi || {};
     document.body.classList.remove('logged');
     const guruList = U.ls.get(LS_GURU, []) || [];
-    const ui = A.ui._login = A.ui._login || { peran: 'guru', guruId: '', buka: false };
+    const ui = A.ui._login = A.ui._login || { peran: 'guru', guruId: U.ls.get('ahe_guru_akhir', '') || '', buka: false };
     const cache = U.ls.get(LS_DATA + 'admin', null) || U.ls.get(LS_DATA + 'wakil', null) || U.ls.get(LS_DATA + 'guru', null);
     const set = (cache && cache.settings) || U.ls.get('ahe_landing_v1', {}).settings || {};
     U.applyTheme(set.warna_utama);
@@ -198,6 +198,7 @@
             ${ui.peran === 'guru' && set.wa_admin ? `<p class="small muted mt-16" style="text-align:center">Lupa kata sandi? <a target="_blank" rel="noopener" href="${U.waLink(set.wa_admin, 'Assalamu\'alaikum Admin, saya lupa kata sandi aplikasi les.')}" style="color:var(--wa);font-weight:700">${icon('message-circle', 'ic-sm')} Hubungi Admin</a></p>` : ''}
           </div>
           ${!U.siapApi() ? `<div class="note-box bad mt-16">${icon('triangle-alert')}<span><b>URL backend belum diisi.</b> Isi GAS_URL di file js/config.js dengan URL Web App Apps Script (berakhiran /exec).</span></div>` : ''}
+          <div class="pwa-login" data-pwa-install hidden><span class="pwa-ic"><img src="icons/icon-192.png" alt=""></span><span><b>Pasang aplikasi</b><small>Buka lebih cepat dari layar utama HP / laptop</small></span>${icon('download')}</div>
           <p class="mt-16" style="text-align:center"><a href="index.html" class="small strong">${icon('arrow-left', 'ic-sm')} Kembali ke halaman utama</a></p>
         </div></div>`;
       $$('[data-peran]').forEach((b) => b.onclick = () => { ui.peran = b.dataset.peran; render(); });
@@ -237,6 +238,7 @@
     const role = d.role;
     A.S.token = d.token; A.S.role = role; A.S.user = d.user;
     U.ls.set(LS_SESI, { token: d.token, role, user: d.user });
+    if (role !== 'admin' && d.user && d.user.id) U.ls.set('ahe_guru_akhir', d.user.id); // aplikasi terinstal: nama guru langsung terpilih
     delete d.token;
     // data milik akun lain di perangkat ini dibuang
     ['admin', 'guru', 'wakil'].filter((r) => r !== role).forEach((r) => U.ls.del(LS_DATA + r));
@@ -306,6 +308,7 @@
       <aside class="sidebar"><div class="brand"><span class="logo">${U.logoHtml(set, '<span style="color:var(--p);font-weight:900;font-size:22px;font-family:var(--f-head)">A</span>')}</span><div style="min-width:0"><div class="t1 ellipsis">${esc(set.nama_aplikasi || 'Ahe & Ala')}</div><div class="t2">Les Baca & Berhitung</div></div></div>
         <div class="nav-sec">${admin ? 'Navigasi Utama' : wakil ? 'Menu Wakil Admin' : 'Menu Guru'}</div>
         <nav class="nav" id="snav">${nav.map(([k, l, ic]) => `<a href="#/${k}" data-nav="${k}">${icon(ic)}<span>${l}</span><span class="count hidden" data-count="${k}"></span></a>`).join('')}</nav>
+        <button class="nav-install" data-pwa-install hidden>${icon('download')}<span>Instal aplikasi</span></button>
         <div class="side-user">${U.avatar(A.S.user.nama, A.S.user.id || 'admin', 'av-sm')}<div class="who">${esc(A.S.user.nama)}<small>${admin ? 'Admin Utama' : wakil ? 'Wakil Admin' : 'Guru'} · ${esc(set.nama_unit || '')}</small></div><button data-keluar title="Keluar" aria-label="Keluar">${icon('log-out')}</button></div>
       </aside>
       <div class="main">
@@ -326,7 +329,8 @@
       const m = U.modal({
         title: 'Menu lainnya', icon: 'menu', foot: false,
         body: `<div class="more-grid">${(admin ? NAV_ADMIN : NAV_WAKIL).map(([k, lb, ic]) => { const c = A.badge(k); return `<a href="#/${k}" data-m>${c ? `<span class="count">${c}</span>` : ''}<span class="icon-dot">${icon(ic)}</span>${lb}</a>`; }).join('')}</div>
-          <button class="btn btn-danger-ghost btn-block mt-16" data-k>${icon('log-out')} Keluar</button>`
+          <button class="btn btn-soft btn-block mt-16" data-pwa-install hidden>${icon('download')} Instal aplikasi di HP ini</button>
+          <button class="btn btn-danger-ghost btn-block mt-12" data-k>${icon('log-out')} Keluar</button>`
       });
       m.$$('[data-m]').forEach((a) => a.onclick = () => m.close());
       m.$('[data-k]').onclick = () => { m.close(); A.keluar(); };
@@ -641,7 +645,9 @@
             ${fld('ks-baru', 'Kata sandi baru', 'new-password')}
             ${fld('ks-ulang', 'Ulangi kata sandi baru', 'new-password')}
             <p class="tiny muted">${icon('info', 'ic-sm')} Minimal 6 karakter. Lupa kata sandi? Minta Admin meresetnya.</p>
-            <button class="btn btn-primary btn-lg btn-block" id="ks-simpan">${icon('save')} Simpan kata sandi baru</button></form></div>`;
+            <button class="btn btn-primary btn-lg btn-block" id="ks-simpan">${icon('save')} Simpan kata sandi baru</button></form></div>
+        <div class="card card-pad mt-16 pwa-card" style="max-width:520px" ${window.PWA && PWA.canInstall ? '' : 'hidden'}><div class="row-gap"><img src="icons/icon-192.png" alt="" style="width:52px;height:52px;border-radius:14px"><div style="flex:1;min-width:0"><b>Pasang aplikasi di HP ini</b><div class="small muted">Ikon SIMLes muncul di layar utama. Absen jadi lebih cepat dibuka, tanpa mengetik alamat.</div></div></div>
+          <button class="btn btn-soft btn-block mt-12" data-pwa-install hidden>${icon('download')} Instal aplikasi</button></div>`;
       $$('[data-lihat]').forEach((b) => b.onclick = () => { const i = $('#' + b.dataset.lihat); i.type = i.type === 'password' ? 'text' : 'password'; b.innerHTML = icon(i.type === 'password' ? 'eye' : 'eye-off'); });
       $('#f-sandi').onsubmit = async (e) => {
         e.preventDefault();
@@ -665,3 +671,7 @@
   A.boot = boot;
   document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 0));
 })();
+
+// Kartu "Pasang aplikasi" di Akun Saya mengikuti status instal PWA
+window.addEventListener('pwa:installable', () => { document.querySelectorAll('.pwa-card').forEach((c) => { c.hidden = false; }); });
+window.addEventListener('pwa:installed', () => { document.querySelectorAll('.pwa-card').forEach((c) => { c.hidden = true; }); });

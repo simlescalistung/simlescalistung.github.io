@@ -1015,3 +1015,15 @@ body.public .ann { margin-top: 28px; }
   .tk-act { width: 100%; justify-content: flex-start; }
   .modal-foot .btn.mr-auto { flex-basis: 100%; margin-right: 0; }
 }
+
+/* ---------- v1.7.1: Aplikasi terinstal (PWA) ---------- */
+[hidden] { display: none !important; }
+.nav-install { display: flex; align-items: center; gap: 10px; width: 100%; margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; border: 1px dashed rgba(255,255,255,.35); background: rgba(255,255,255,.08); color: #fff; font: 600 13px var(--f-body, inherit); cursor: pointer; }
+.nav-install:hover { background: rgba(255,255,255,.16); }
+.nav-install .ic, .nav-install svg { width: 18px; height: 18px; }
+.pwa-login { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 12px 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line-2); box-shadow: var(--sh-1, 0 1px 2px rgba(0,0,0,.05)); cursor: pointer; text-align: left; }
+.pwa-login:hover { border-color: var(--p-200); }
+.pwa-login .pwa-ic img { width: 42px; height: 42px; border-radius: 11px; display: block; }
+.pwa-login > span:nth-child(2) { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pwa-login small { color: var(--text-2); font-size: 12px; }
+.pwa-login > svg { color: var(--p); width: 20px; height: 20px; }

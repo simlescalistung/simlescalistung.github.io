@@ -1,0 +1,21 @@
+{
+  "id": "./app.html",
+  "name": "SIMLes Calistung",
+  "short_name": "SIMLes",
+  "description": "Aplikasi les baca (Ahe) & berhitung (Ala): absen guru, data siswa, SPP & kuitansi, piagam, dan WhatsApp otomatis.",
+  "lang": "id",
+  "dir": "ltr",
+  "start_url": "app.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "theme_color": "#5B21B6",
+  "background_color": "#5B21B6",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

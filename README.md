@@ -21,6 +21,8 @@ css/style.css   Desain (warna utama mengikuti pengaturan admin)
 js/config.js    ← ISI URL /exec Google Apps Script di sini
 js/*.js         Logika aplikasi (jangan diubah)
 assets/         Ikon situs
+icons/          Ikon aplikasi terinstal (SIMLes)
+manifest.webmanifest, sw.js, pwa.js, offline.html   Agar halaman login bisa diinstal (PWA)
 ```
 Backend (`Kode.gs`, `appsscript.json`) **tidak** ada di folder ini. Backend dipasang terpisah di Google Apps Script.
 
